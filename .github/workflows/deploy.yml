@@ -32,7 +32,7 @@ jobs:
 
       - name: Config FrontEnd file
         run: |
-          sed -i 's/_API_ADDRESS_/${{ secrets.HOST }}/g' backend/myapi.py
+          sed -i 's/_API_ADDRESS_/${{ secrets.HOST }}/g' frontend/index.html
 
       - name: Deploy FrontEnd
         uses: appleboy/scp-action@v0.1.7
