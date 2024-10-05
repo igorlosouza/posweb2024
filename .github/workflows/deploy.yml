@@ -13,15 +13,12 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Deploy FrontEnd
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          source: "frontend/index.html"
-          target: "/var/www/html/"
-          strip_components: 1
+      - name: Config BackEnd file
+        run: |
+          sed -i 's/_USER_/${{ secrets.DB_USERNAME }}/g' backend/myapi.py
+          sed -i 's/_PASSWORD_/${{ secrets.DB_PASSWORD }}/g' backend/myapi.py
+          sed -i 's/_HOST_/${{ secrets.DB_HOST }}/g' backend/myapi.py
+          sed -i 's/_DBNAME_/${{ secrets.DB_NAME }}/g' backend/myapi.py
 
       - name: Deploy BackEnd
         uses: appleboy/scp-action@v0.1.7
@@ -31,4 +28,18 @@ jobs:
           key: ${{ secrets.KEY }}
           source: "backend/myapi.py"
           target: "/home/ubuntu/myapp/"
+          strip_components: 1
+
+      - name: Config FrontEnd file
+        run: |
+          sed -i 's/_API_ADDRESS_/${{ secrets.HOST }}/g' backend/myapi.py
+
+      - name: Deploy FrontEnd
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          source: "frontend/index.html"
+          target: "/var/www/html/"
           strip_components: 1
