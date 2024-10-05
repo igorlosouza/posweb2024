@@ -1,6 +1,11 @@
 name: Deploy MyAPP
 run-name: ${{ github.actor }} is deploying MyAPP 🚀
-on: [workflow_dispatch]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
 jobs:
   Deploy-MyAPP:
     runs-on: ubuntu-latest
@@ -16,3 +21,12 @@ jobs:
           key: ${{ secrets.KEY }}
           source: "frontend/index.html"
           target: "/var/www/html/"
+
+      - name: Deploy BackEnd
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          source: "backend/myapi.py"
+          target: "/home/ubuntu/myapp/"
