@@ -21,6 +21,7 @@ jobs:
           key: ${{ secrets.KEY }}
           source: "frontend/index.html"
           target: "/var/www/html/"
+          strip_components: 1
 
       - name: Deploy BackEnd
         uses: appleboy/scp-action@v0.1.7
@@ -30,3 +31,4 @@ jobs:
           key: ${{ secrets.KEY }}
           source: "backend/myapi.py"
           target: "/home/ubuntu/myapp/"
+          strip_components: 1
