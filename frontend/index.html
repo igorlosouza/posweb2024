@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>People Management System</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1 class="text-center mb-4">People Management System</h1>
+
+      <!-- Form to Add or Update Person -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form id="personForm">
+            <input type="hidden" id="personId" />
+            <div class="mb-3">
+              <label for="name" class="form-label">Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                placeholder="Enter name"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="age" class="form-label">Age</label>
+              <input
+                type="number"
+                class="form-control"
+                id="age"
+                placeholder="Enter age"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="cell_phone" class="form-label">Cell Phone</label>
+              <input
+                type="text"
+                class="form-control"
+                id="cell_phone"
+                placeholder="Enter cell phone"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              Add Person
+            </button>
+            <button type="button" class="btn btn-secondary" id="resetBtn">
+              Reset
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Table to Display People -->
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Cell Phone</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="peopleTableBody">
+          <!-- Table rows will be inserted dynamically here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Bootstrap and JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const apiUrl = "http://_API_ADDRESS_:5000/people"; // Change to your API URL
+
+      // Fetch all people and display them in the table
+      function fetchPeople() {
+        fetch(apiUrl)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            // Log the raw response to debug
+            console.log("Raw response: ", response);
+            return response.json(); // Make sure this is called only once
+          })
+          .then((data) => {
+            console.log("Parsed JSON data: ", data); // Log the JSON data
+
+            const tableBody = document.getElementById("peopleTableBody");
+            tableBody.innerHTML = "";
+            data.forEach((person) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                        <td>${person.id}</td>
+                        <td>${person.name}</td>
+                        <td>${person.age}</td>
+                        <td>${person.cell_phone}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editPerson(${person.id})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deletePerson(${person.id})">Delete</button>
+                        </td>
+                    `;
+              tableBody.appendChild(row);
+            });
+          });
+      }
+
+      // Add or Update a person
+      document
+        .getElementById("personForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const personId = document.getElementById("personId").value;
+          const name = document.getElementById("name").value;
+          const age = document.getElementById("age").value;
+          const cellPhone = document.getElementById("cell_phone").value;
+
+          const personData = {
+            name: name,
+            age: age,
+            cell_phone: cellPhone,
+          };
+
+          if (personId) {
+            // Update Person
+            fetch(`${apiUrl}/${personId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(personData),
+            })
+              .then((response) => response.json())
+              .then(() => {
+                alert("Person updated successfully!");
+                fetchPeople();
+                resetForm();
+              });
+          } else {
+            // Create Person
+            fetch(apiUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(personData),
+            })
+              .then((response) => response.json())
+              .then(() => {
+                alert("Person added successfully!");
+                fetchPeople();
+                resetForm();
+              });
+          }
+        });
+
+      // Reset form and table actions
+      function resetForm() {
+        document.getElementById("personId").value = "";
+        document.getElementById("name").value = "";
+        document.getElementById("age").value = "";
+        document.getElementById("cell_phone").value = "";
+        document.getElementById("submitBtn").innerText = "Add Person";
+      }
+
+      // Edit a person (prefill the form)
+      function editPerson(id) {
+        fetch(`${apiUrl}/${id}`)
+          .then((response) => response.json())
+          .then((person) => {
+            document.getElementById("personId").value = person.id;
+            document.getElementById("name").value = person.name;
+            document.getElementById("age").value = person.age;
+            document.getElementById("cell_phone").value = person.cell_phone;
+            document.getElementById("submitBtn").innerText = "Update Person";
+          });
+      }
+
+      // Delete a person
+      function deletePerson(id) {
+        if (confirm("Are you sure you want to delete this person?")) {
+          fetch(`${apiUrl}/${id}`, {
+            method: "DELETE",
+          })
+            .then((response) => response.json())
+            .then(() => {
+              alert("Person deleted successfully!");
+              fetchPeople();
+            });
+        }
+      }
+
+      // Load people when the page is loaded
+      window.onload = function () {
+        fetchPeople();
+      };
+    </script>
+  </body>
+</html>
